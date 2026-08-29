@@ -1,0 +1,516 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1>Lead Management</h1>
+        <p>Add, qualify, follow up and convert learner leads</p>
+    </div>
+
+    <a href="/leads/add" class="btn">
+        + Add Lead
+    </a>
+</div>
+
+
+<!-- ADD LEAD FORM -->
+<section class="panel">
+
+    <div class="panel-head">
+        <h2>Add New Lead</h2>
+        <span>Required fields marked *</span>
+    </div>
+
+    <form method="POST" action="/leads/add">
+
+        <div class="form-grid">
+
+            <div>
+                <label>Name *</label>
+                <input
+                    type="text"
+                    name="name"
+                    placeholder="Learner name"
+                    required
+                >
+            </div>
+
+            <div>
+                <label>Phone *</label>
+                <input
+                    type="text"
+                    name="phone"
+                    placeholder="10-digit number"
+                    required
+                >
+            </div>
+
+            <div>
+                <label>Email</label>
+                <input
+                    type="email"
+                    name="email"
+                    placeholder="learner@email.com"
+                >
+            </div>
+
+            <div>
+                <label>Course *</label>
+
+                <select name="course" required>
+                    {% for course in courses %}
+                        <option value="{{ course }}">
+                            {{ course }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label>Lead Source</label>
+
+                <select name="source">
+                    <option value="Website">Website</option>
+                    <option value="Instagram">Instagram</option>
+                    <option value="Referral">Referral</option>
+                    <option value="Facebook">Facebook</option>
+                    <option value="LinkedIn">LinkedIn</option>
+                    <option value="Walk-in">Walk-in</option>
+                </select>
+            </div>
+
+            <div>
+                <label>Status</label>
+
+                <select name="status">
+                    {% for s in statuses %}
+                        <option value="{{ s }}">
+                            {{ s }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label>Follow-up Date</label>
+
+                <input
+                    type="date"
+                    name="follow_up"
+                >
+            </div>
+
+            <div>
+                <label>Notes</label>
+
+                <input
+                    type="text"
+                    name="notes"
+                    placeholder="Learner requirements / concerns"
+                >
+            </div>
+
+        </div>
+
+        <button class="btn" type="submit">
+            Save Lead
+        </button>
+
+    </form>
+
+</section>
+
+
+<!-- FILTERS -->
+<section class="panel">
+
+    <div class="panel-head">
+
+        <h2>All Leads <small>{{ leads|length }}</small></h2>
+
+        <form class="filters" method="GET">
+
+            <input
+                type="text"
+                name="search"
+                placeholder="Search name, phone, email"
+                value="{{ search or '' }}"
+            >
+
+            <select name="status">
+
+                <option value="">
+                    All statuses
+                </option>
+
+                {% for s in statuses %}
+
+                    <option
+                        value="{{ s }}"
+                        {% if selected_status == s %}
+                            selected
+                        {% endif %}
+                    >
+                        {{ s }}
+                    </option>
+
+                {% endfor %}
+
+            </select>
+
+            <button class="btn" type="submit">
+                Filter
+            </button>
+
+        </form>
+
+    </div>
+
+
+    <!-- LEADS TABLE -->
+
+    <div class="table-wrap">
+
+        <table>
+
+            <thead>
+
+                <tr>
+                    <th>Lead</th>
+                    <th>Course</th>
+                    <th>Source</th>
+                    <th>Status</th>
+                    <th>Lead Score</th>
+                    <th>Follow-up</th>
+                    <th>Notes</th>
+                    <th>Actions</th>
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for lead in leads %}
+
+                <tr>
+
+                    <!-- LEAD -->
+                    <td>
+
+                        <strong>
+                            {{ lead.name }}
+                        </strong>
+
+                        <br>
+
+                        <small>
+                            {{ lead.phone }}
+
+                            {% if lead.email %}
+                                - {{ lead.email }}
+                            {% endif %}
+                        </small>
+
+                    </td>
+
+
+                    <!-- COURSE -->
+                    <td>
+                        {{ lead.course }}
+                    </td>
+
+
+                    <!-- SOURCE -->
+                    <td>
+                        {{ lead.source or '-' }}
+                    </td>
+
+
+                    <!-- STATUS -->
+                    <td>
+
+                        <span
+                            class="status {{ lead.status|lower|replace(' ', '-') }}"
+                        >
+                            {{ lead.status }}
+                        </span>
+
+                    </td>
+
+
+                    <!-- LEAD SCORE -->
+                    <td>
+
+                        <strong>
+                            {{ lead.score }}/100
+                        </strong>
+
+                        <br>
+
+                        <span
+                            class="score {{ lead.category|lower }}"
+                        >
+                            {{ lead.category }}
+                        </span>
+
+                    </td>
+
+
+                    <!-- FOLLOW UP -->
+                    <td>
+                        {{ lead.follow_up or '-' }}
+                    </td>
+
+
+                    <!-- NOTES -->
+                    <td class="notes">
+                        {{ lead.notes or '-' }}
+                    </td>
+
+
+                    <!-- ACTIONS -->
+                    <td class="actions">
+
+                        <button
+                            class="btn small"
+                            type="button"
+                            onclick='editLead({{ lead|tojson }})'
+                        >
+                            Edit
+                        </button>
+
+
+                        <form
+                            method="POST"
+                            action="{{ url_for('delete_lead', lead_id=lead.id) }}"
+                            onsubmit="return confirm('Delete this lead?');"
+                            style="display:inline;"
+                        >
+
+                            <button
+                                class="btn small danger"
+                                type="submit"
+                            >
+                                Delete
+                            </button>
+
+                        </form>
+
+                    </td>
+
+                </tr>
+
+                {% else %}
+
+                <tr>
+
+                    <td
+                        colspan="8"
+                        class="empty"
+                    >
+                        No leads found.
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+
+<!-- EDIT LEAD MODAL -->
+
+<div
+    id="editModal"
+    class="modal"
+    style="display:none;"
+>
+
+    <div class="modal-content">
+
+        <h2>Edit Lead</h2>
+
+        <form
+            id="editForm"
+            method="POST"
+        >
+
+            <label>Name</label>
+
+            <input
+                type="text"
+                id="editName"
+                name="name"
+                required
+            >
+
+
+            <label>Phone</label>
+
+            <input
+                type="text"
+                id="editPhone"
+                name="phone"
+                required
+            >
+
+
+            <label>Email</label>
+
+            <input
+                type="email"
+                id="editEmail"
+                name="email"
+            >
+
+
+            <label>Course</label>
+
+            <select
+                id="editCourse"
+                name="course"
+            >
+
+                {% for course in courses %}
+
+                    <option value="{{ course }}">
+                        {{ course }}
+                    </option>
+
+                {% endfor %}
+
+            </select>
+
+
+            <label>Source</label>
+
+            <select
+                id="editSource"
+                name="source"
+            >
+
+                <option value="Website">Website</option>
+                <option value="Instagram">Instagram</option>
+                <option value="Referral">Referral</option>
+                <option value="Facebook">Facebook</option>
+                <option value="LinkedIn">LinkedIn</option>
+                <option value="Walk-in">Walk-in</option>
+
+            </select>
+
+
+            <label>Status</label>
+
+            <select
+                id="editStatus"
+                name="status"
+            >
+
+                {% for s in statuses %}
+
+                    <option value="{{ s }}">
+                        {{ s }}
+                    </option>
+
+                {% endfor %}
+
+            </select>
+
+
+            <label>Follow-up Date</label>
+
+            <input
+                type="date"
+                id="editFollowUp"
+                name="follow_up"
+            >
+
+
+            <label>Notes</label>
+
+            <input
+                type="text"
+                id="editNotes"
+                name="notes"
+            >
+
+
+            <div style="margin-top:20px;">
+
+                <button
+                    class="btn"
+                    type="submit"
+                >
+                    Update Lead
+                </button>
+
+                <button
+                    class="btn danger"
+                    type="button"
+                    onclick="closeEdit()"
+                >
+                    Cancel
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<script>
+
+function editLead(lead) {
+
+    document.getElementById("editModal").style.display = "flex";
+
+    document.getElementById("editName").value =
+        lead.name || "";
+
+    document.getElementById("editPhone").value =
+        lead.phone || "";
+
+    document.getElementById("editEmail").value =
+        lead.email || "";
+
+    document.getElementById("editCourse").value =
+        lead.course || "";
+
+    document.getElementById("editSource").value =
+        lead.source || "";
+
+    document.getElementById("editStatus").value =
+        lead.status || "New";
+
+    document.getElementById("editFollowUp").value =
+        lead.follow_up || "";
+
+    document.getElementById("editNotes").value =
+        lead.notes || "";
+
+    document.getElementById("editForm").action =
+        "/leads/edit/" + lead.id;
+}
+
+
+function closeEdit() {
+
+    document.getElementById("editModal").style.display =
+        "none";
+
+}
+
+</script>
+
+{% endblock %}

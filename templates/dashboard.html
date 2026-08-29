@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block page_title %}Sales Dashboard{% endblock %}
+{% block page_subtitle %}A simple CRM for managing prospective learners{% endblock %}
+
+{% block content %}
+<section class="cards">
+    <div class="card"><span>Total Leads</span><strong>{{ total }}</strong><small>All prospects</small></div>
+    <div class="card"><span>Interested</span><strong>{{ interested }}</strong><small>High-potential leads</small></div>
+    <div class="card"><span>Follow-ups</span><strong>{{ followups }}</strong><small>Next 7 days</small></div>
+    <div class="card"><span>Conversion Rate</span><strong>{{ conversion_rate }}%</strong><small>{{ converted }} converted</small></div>
+</section>
+
+<section class="grid-two">
+    <div class="panel">
+        <div class="panel-head"><h2>Lead Pipeline</h2><a href="{{ url_for('leads') }}">View all</a></div>
+        <div class="pipeline">
+            {% for item in status_data %}
+            <div class="pipeline-row">
+                <span>{{ item.status }}</span>
+                <div class="bar"><i style="width: {{ (item.count / total * 100) if total else 0 }}%"></i></div>
+                <b>{{ item.count }}</b>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-head"><h2>What this demonstrates</h2></div>
+        <ul class="feature-list">
+            <li>Lead qualification and status tracking</li>
+            <li>Customer follow-up management</li>
+            <li>Course interest tracking</li>
+            <li>Conversion and sales metrics</li>
+            <li>Searchable customer records</li>
+        </ul>
+    </div>
+</section>
+
+<section class="panel">
+    <div class="panel-head"><h2>Recent Leads</h2><a href="{{ url_for('leads') }}">Manage leads</a></div>
+    <div class="table-wrap">
+    <table>
+        <thead><tr><th>Name</th><th>Course</th><th>Status</th><th>Follow-up</th><th>Source</th></tr></thead>
+        <tbody>
+        {% for lead in recent %}
+        <tr>
+            <td><strong>{{ lead.name }}</strong><br><small>{{ lead.phone }}</small></td>
+            <td>{{ lead.course }}</td>
+            <td><span class="status {{ lead.status|lower|replace(' ', '-') }}">{{ lead.status }}</span></td>
+            <td>{{ lead.follow_up or '—' }}</td>
+            <td>{{ lead.source or '—' }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</section>
+{% endblock %}

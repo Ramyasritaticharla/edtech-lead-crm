@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LeadFlow CRM</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="brand"><span>◆</span> LeadFlow</div>
+        <p class="brand-sub">EdTech CRM</p>
+        <nav>
+            <a href="{{ url_for('dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('leads') }}">Leads</a>
+        </nav>
+        <div class="sidebar-footer">B2C Sales Management</div>
+    </aside>
+
+    <main class="main">
+        <header class="topbar">
+            <div>
+                <h1>{% block page_title %}Dashboard{% endblock %}</h1>
+                <p>{% block page_subtitle %}Track learners, follow-ups and conversions{% endblock %}</p>
+            </div>
+            <a class="btn primary" href="{{ url_for('leads') }}#add-lead">+ Add Lead</a>
+        </header>
+
+        {% block content %}{% endblock %}
+    </main>
+</div>
+</body>
+</html>
